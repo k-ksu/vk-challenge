@@ -1,0 +1,15 @@
+app:
+  name: 'vk-techpoint'
+  version: '1.0.0'
+
+cron:
+  name: "pinger-cron"
+  version: '1.0.0'
+  interval: '2s'
+  tech_api_client_host: 'http://127.0.0.1:7050'
+
+http:
+  port: '7050'
+
+postgres:
+  pool_max: 2

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Container Status Table</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 2em;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1em;
+            }
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1em;
+            }
+            button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .status {
+                margin-top: 0.5em;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div>
+                <h1>Container Status Table</h1>
+                <p class="status" id="lastUpdated">Last updated: Fetching...</p>
+            </div>
+            <button id="toggleRefresh">Turn Off Auto-Refresh</button>
+        </div>
+
+        <table id="containerTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>State</th>
+                    <th>Status</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" style="text-align: center">
+                        No container data available.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <script>
+            const containerTable = document
+                .getElementById("containerTable")
+                .getElementsByTagName("tbody")[0];
+            const lastUpdatedElement = document.getElementById("lastUpdated");
+            const toggleRefreshButton =
+                document.getElementById("toggleRefresh");
+
+            let autoRefresh = true;
+            let refreshInterval;
+
+            const fetchContainerStatus = async () => {
+                try {
+                    const response = await fetch(
+                        "http://127.0.0.1:7050/get_containers_status",
+                    );
+                    const data = await response.json();
+                    renderTable(data);
+                    updateLastUpdatedTime();
+                } catch (error) {
+                    console.erwror("Error fetching container status:", error);
+                }
+            };
+
+            const renderTable = (containers) => {
+                containerTable.innerHTML = "";
+
+                if (containers.length === 0) {
+                    const row = containerTable.insertRow();
+                    const cell = row.insertCell(0);
+                    cell.colSpan = 5;
+                    cell.textContent = "No container data available.";
+                    cell.style.textAlign = "center";
+                    return;
+                }
+
+                containers.forEach((container) => {
+                    const row = containerTable.insertRow();
+                    row.insertCell(0).textContent = container.ID;
+                    row.insertCell(1).textContent = container.Image;
+                    row.insertCell(2).textContent = container.State;
+                    row.insertCell(3).textContent = container.Status;
+                    row.insertCell(4).textContent = container.Name;
+                });
+            };
+
+            const updateLastUpdatedTime = () => {
+                const now = new Date();
+                lastUpdatedElement.textContent = `Last updated: ${now.toISOString().replace("T", " ").slice(0, 19)}`;
+            };
+
+            toggleRefreshButton.addEventListener("click", () => {
+                autoRefresh = !autoRefresh;
+                toggleRefreshButton.textContent = autoRefresh
+                    ? "Turn Off Auto-Refresh"
+                    : "Turn On Auto-Refresh";
+
+                if (autoRefresh) {
+                    startAutoRefresh();
+                } else {
+                    stopAutoRefresh();
+                }
+            });
+
+            const startAutoRefresh = () => {
+                fetchContainerStatus();
+                refreshInterval = setInterval(fetchContainerStatus, 2000);
+            };
+
+            const stopAutoRefresh = () => {
+                clearInterval(refreshInterval);
+            };
+
+            // Initial call and start auto-refresh
+            startAutoRefresh();
+        </script>
+    </body>
+</html>
