@@ -20,4 +20,4 @@ Navigate to http://127.0.0.1:8080 to see the result!
 
 ## Architecture
 
-
+![image alr](https://github.com/k-ksu/vk-challenge/blob/main/Arch.png)
